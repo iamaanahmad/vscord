@@ -9,7 +9,7 @@ export const EMPTY = "";
 export const FAKE_EMPTY = "\u200b\u200b";
 
 export const CONFIG_KEYS = {
-    Enabled: "enabled" as const,
+    Enable: "enable" as const,
     App: {
         Id: "app.id" as const,
         Name: "app.name" as const,

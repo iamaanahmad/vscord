@@ -1,4 +1,4 @@
-import { commands, window, workspace, type ExtensionContext } from "vscode";
+import { commands, ConfigurationTarget, window, workspace, type ExtensionContext } from "vscode";
 import { getApplicationId } from "./helpers/getApplicationId";
 import { StatusBarMode, editor } from "./editor";
 import { RPCController } from "./controller";
@@ -16,7 +16,7 @@ export const registerListeners = (ctx: ExtensionContext) => {
     const onConfigurationChanged = workspace.onDidChangeConfiguration(async () => {
         const config = getConfig();
         const clientId = getApplicationId(config).clientId;
-        const isEnabled = config.get(CONFIG_KEYS.Enabled);
+        const isEnabled = config.get(CONFIG_KEYS.Enable);
 
         controller.debug = config.get(CONFIG_KEYS.Behaviour.Debug) ?? false;
         editor.updateStatusBarFromConfig();
@@ -39,7 +39,7 @@ export const registerCommands = (ctx: ExtensionContext) => {
     const enable = async (update = true) => {
         if (update)
             try {
-                await config.update(CONFIG_KEYS.Enabled, true);
+                await config.update(CONFIG_KEYS.Enable, true, ConfigurationTarget.Workspace);
             } catch {}
 
         await controller.enable();
@@ -48,7 +48,7 @@ export const registerCommands = (ctx: ExtensionContext) => {
     const disable = async (update = true) => {
         if (update)
             try {
-                await config.update(CONFIG_KEYS.Enabled, false);
+                await config.update(CONFIG_KEYS.Enable, false, ConfigurationTarget.Workspace);
             } catch {}
 
         await controller.disable();
@@ -59,7 +59,7 @@ export const registerCommands = (ctx: ExtensionContext) => {
 
     const togglePrivacyMode = async (activate: boolean) => {
         try {
-            await config.update(CONFIG_KEYS.App.PrivacyMode, activate);
+            await config.update(CONFIG_KEYS.App.PrivacyMode, activate, ConfigurationTarget.Workspace);
         } catch {}
 
         await controller.sendActivity(dataClass.editor != null);
@@ -185,7 +185,7 @@ export async function activate(ctx: ExtensionContext) {
     registerCommands(ctx);
     registerListeners(ctx);
 
-    if (!getConfig().get(CONFIG_KEYS.Enabled)) await controller.disable();
+    if (!getConfig().get(CONFIG_KEYS.Enable)) await controller.disable();
 }
 
 export async function deactivate() {
