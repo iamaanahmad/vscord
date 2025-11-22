@@ -12,6 +12,7 @@ export enum StatusBarMode {
 
 class EditorController implements Disposable {
     statusBarItem: StatusBarItem | undefined;
+    statusBarItemMode: StatusBarMode = StatusBarMode.Disabled;
 
     #getAlignmentFromConfig(config: ExtensionConfiguration) {
         const value = config.get(CONFIG_KEYS.Behaviour.StatusBarAlignment);
@@ -20,6 +21,7 @@ class EditorController implements Disposable {
     }
 
     setStatusBarItem(mode: StatusBarMode) {
+        this.statusBarItemMode = mode;
         const config = getConfig();
         if (!config.get(CONFIG_KEYS.Enable)) {
             mode = StatusBarMode.Disabled;
@@ -68,9 +70,7 @@ class EditorController implements Disposable {
 
     updateStatusBarFromConfig() {
         const config = getConfig();
-        if (!config.get(CONFIG_KEYS.Enable)) {
-            this.setStatusBarItem(StatusBarMode.Disabled);
-        }
+
         const alignment = this.#getAlignmentFromConfig(config);
         const priority = undefined;
         if (!this.statusBarItem) {
@@ -79,19 +79,13 @@ class EditorController implements Disposable {
         }
 
         const old = this.statusBarItem;
+        this.setStatusBarItem(this.statusBarItemMode);
         if (this.statusBarItem.alignment === alignment) {
             return;
         }
 
         // Change unchangable: alignment/priority
         this.statusBarItem = window.createStatusBarItem(alignment, priority);
-        //#region copy
-        this.statusBarItem.text = old.text;
-        this.statusBarItem.tooltip = old.tooltip;
-        this.statusBarItem.color = old.color;
-        this.statusBarItem.command = old.command;
-        this.statusBarItem.accessibilityInformation = old.accessibilityInformation;
-        //#endregion
 
         this.statusBarItem.show();
         old.dispose();
